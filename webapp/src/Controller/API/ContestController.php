@@ -531,15 +531,12 @@ class ContestController extends AbstractRestController
         description: 'The contest state',
         content: new OA\JsonContent(ref: new Model(type: ContestState::class))
     )]
-    public function getContestStateAction(Request $request, string $cid): ContestState
-    {
-        $contest         = $this->getContestWithId($request, $cid);
-        $inactiveAllowed = $this->isGranted('ROLE_API_READER');
+    public function getContestStateAction(Request $request,string $cid):ContestState{
+        $contest= $this->getContestWithId($request, $cid);$inactiveAllowed = $this->isGranted('ROLE_API_READER');
         if (($inactiveAllowed && $contest->getEnabled()) || (!$inactiveAllowed && $contest->isActive())) {
             return $contest->getState();
         } else {
-            throw new AccessDeniedHttpException();
-        }
+            throw new AccessDeniedHttpException();}
     }
 
     /**
