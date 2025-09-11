@@ -863,14 +863,27 @@ $(function() {
         const editor = monaco.editor.create(element, {
             value: content,
             scrollbar: {
-                vertical: 'auto',
+                alwaysConsumeMouseWheel: false,
+                vertical: 'hidden',
                 horizontal: 'auto'
             },
             scrollBeyondLastLine: false,
             automaticLayout: true,
             readOnly: %s,
             theme: getCurrentEditorTheme(),
+            minimap: {
+                // Minimap does not work properly without a scrollable editor.
+                enabled: false,
+            },
         });
+
+        const scrollbarHeight = editor.getOptions().get(monaco.editor.EditorOption.layoutInfo).horizontalScrollbarHeight;
+        const updateHeight = () => {
+            element.style.height = editor.getContentHeight() + scrollbarHeight + 'px';
+            editor.layout();
+        };
+        updateHeight();
+        editor.onDidContentSizeChange(updateHeight);
         %s
         %s
     });
@@ -967,10 +980,12 @@ $(function() {
             });
         });
 
+        const element = document.getElementById("__EDITOR__");
         const diffEditor = monaco.editor.createDiffEditor(
-            document.getElementById("__EDITOR__"), {
+            element, {
             scrollbar: {
-                vertical: 'auto',
+                alwaysConsumeMouseWheel: false,
+                vertical: 'hidden',
                 horizontal: 'auto'
             },
             scrollBeyondLastLine: false,
@@ -978,11 +993,26 @@ $(function() {
             readOnly: true,
             renderSideBySide: sideBySide,
             theme: getCurrentEditorTheme(),
+            minimap: {
+                // Minimap does not work properly without a scrollable editor.
+                enabled: false,
+            },
         });
         diffEditor.setModel({
             original: originalModel,
             modified: modifiedModel,
         });
+
+        const scrollbarHeight = diffEditor.getOriginalEditor().getOptions().get(monaco.editor.EditorOption.layoutInfo).horizontalScrollbarHeight;
+        const updateHeight = () => {
+            element.style.height = Math.max(
+                diffEditor.getOriginalEditor().getContentHeight(),
+                diffEditor.getModifiedEditor().getContentHeight(),
+            ) + scrollbarHeight + 'px';
+            diffEditor.layout();
+        };
+        updateHeight();
+        diffEditor.onDidContentSizeChange(updateHeight);
     });
 });
 </script>
